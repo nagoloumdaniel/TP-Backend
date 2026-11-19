@@ -9,7 +9,8 @@
 // Puis, dans un second terminal : node tp/tp1-lecture/sonde.js bloquant (ou flux)
 
 import express from "express";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, createReadStream } from "node:fs";
+import { createInterface } from "node:readline";
 
 const FICHIER = process.argv[2] ?? "data/mesures-SN-CASA-2026-10-31.ndjson";
 
@@ -27,15 +28,34 @@ app.get("/ping", (req, res) => {
   res.json({ pong: true });
 });
 
-// À ÉCRIRE : POST /import/bloquant
-// 1. Lire tout le fichier avec readFileSync (import depuis "node:fs").
-// 2. Le découper en lignes, en ignorant les lignes vides.
-// 3. Analyser chaque ligne avec JSON.parse et additionner les weight_kg.
-// 4. Répondre { mesures, poids_moyen_kg, duree_ms } (duree_ms : mesurée avec performance.now()).
+app.post("/import/bloquant", (req, res) => {
+  const debut = performance.now();
+  const lignes = readFileSync(FICHIER, "utf8").split("\n").filter((l) => l.trim() !== "");
+  let total = 0;
+  for (const ligne of lignes) total += JSON.parse(ligne).weight_kg;
+  res.json({
+    mesures: lignes.length,
+    poids_moyen_kg: Number((total / lignes.length).toFixed(2)),
+    duree_ms: Math.round(performance.now() - debut),
+  });
+});
 
-// À ÉCRIRE : POST /import/flux
-// Le même calcul, en lisant le fichier avec createReadStream (node:fs) et
-// createInterface (node:readline), puis une boucle for await … of sur les lignes.
+app.post("/import/flux", async (req, res) => {
+  const debut = performance.now();
+  let mesures = 0;
+  let total = 0;
+  const lignes = createInterface({ input: createReadStream(FICHIER), crlfDelay: Infinity });
+  for await (const ligne of lignes) {
+    if (ligne.trim() === "") continue;
+    total += JSON.parse(ligne).weight_kg;
+    mesures++;
+  }
+  res.json({
+    mesures,
+    poids_moyen_kg: Number((total / mesures).toFixed(2)),
+    duree_ms: Math.round(performance.now() - debut),
+  });
+});
 
 app.listen(4000, () => {
   console.log(`Serveur du TP 1 sur http://localhost:4000, fichier : ${FICHIER}`);
