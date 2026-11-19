@@ -29,4 +29,22 @@ app.get("/api/hives/:id", (req, res) => {
   res.json(hive);
 });
 
+app.post("/api/hives/:id/measures", (req, res) => {
+  const hive = hives.find((h) => h.id === req.params.id);
+  if (!hive) return res.status(404).json({ error: "Ruche introuvable" });
+
+  const body = req.body ?? {};
+  if (!body.timestamp || typeof body.weight_kg !== "number") {
+    return res.status(400).json({ error: "timestamp et weight_kg sont obligatoires" });
+  }
+  if (body.hive_id !== undefined && body.hive_id !== hive.id) {
+    return res.status(400).json({ error: "hive_id ne correspond pas à la ruche du chemin" });
+  }
+
+  // Le timestamp est celui de la trame (instant de la prise par le capteur), pas celui de la réception.
+  const mesure = { ...body, hive_id: hive.id, site_id: hive.site_id };
+  measures.push(mesure);
+  res.status(201).json(mesure);
+});
+
 app.listen(3000, () => console.log("API sur http://localhost:3000"));
