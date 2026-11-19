@@ -185,6 +185,287 @@
           "raw": "{\n  \"timestamp\": \"2026-10-31T10:00:00Z\",\n  \"weight_kg\": 36.84,\n  \"temp_internal_c\": 34.4,\n  \"humidity_pct\": 64\n}"
         }
       }
+    },
+    {
+      "name": "GET measures (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "measures"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET measures page 2 (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=10&offset=10",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "measures"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "10"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET measures limit=0 (400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=0",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "measures"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "0"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET measures limit=501 (400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=501",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "measures"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "501"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET measures limit=abc (400)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=abc",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "measures"
+          ],
+          "query": [
+            {
+              "key": "limit",
+              "value": "abc"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET measures ruche inconnue (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/measures",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "XX-NOPE-999",
+            "measures"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET inspections (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "inspections"
+          ]
+        }
+      }
+    },
+    {
+      "name": "GET inspections ruche inconnue (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/inspections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "XX-NOPE-999",
+            "inspections"
+          ]
+        }
+      }
+    },
+    {
+      "name": "POST inspections (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "inspections"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "POST inspections colony_status invalide (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "SN-CASA-001",
+            "inspections"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"top\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "POST inspections ruche inconnue (404)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/inspections",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "hives",
+            "XX-NOPE-999",
+            "inspections"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Route inconnue (404)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/inconnue",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "inconnue"
+          ]
+        }
+      }
     }
   ]
 }
