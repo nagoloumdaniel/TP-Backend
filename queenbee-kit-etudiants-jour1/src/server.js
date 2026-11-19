@@ -75,6 +75,12 @@ app.get("/api/hives/:id/measures", (req, res) => {
   res.json({ items: ordonnees.slice(offset, offset + limit), limit, offset });
 });
 
+app.get("/api/hives/:id/inspections", (req, res) => {
+  const hive = hives.find((h) => h.id === req.params.id);
+  if (!hive) return sendProblem(res, 404, `Aucune ruche ne porte l'identifiant ${req.params.id}.`);
+  res.json(inspections.filter((i) => i.hive_id === hive.id));
+});
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
