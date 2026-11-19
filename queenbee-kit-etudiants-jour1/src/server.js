@@ -18,4 +18,9 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+app.get("/api/hives", (req, res) => {
+  const { site_id } = req.query;
+  res.json(!site_id ? hives : hives.filter((h) => h.site_id === site_id));
+});
+
 app.listen(3000, () => console.log("API sur http://localhost:3000"));
