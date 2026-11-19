@@ -15,6 +15,7 @@ const hives = [
   { id: "CI-AGBO-002", site_id: "CI-AGBO", status: "active" },
 ];
 const measures = [];
+const inspections = [];
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
@@ -49,7 +50,33 @@ app.post("/api/hives/:id/measures", (req, res) => {
   res.status(201).json(mesure);
 });
 
+// Entier décimal strict : "abc", "", "1.5" et "-1" sont refusés.
+function parseEntier(valeur, defaut) {
+  if (valeur === undefined) return defaut;
+  return typeof valeur === "string" && /^\d+$/.test(valeur) ? Number(valeur) : NaN;
+}
+
+app.get("/api/hives/:id/measures", (req, res) => {
+  const hive = hives.find((h) => h.id === req.params.id);
+  if (!hive) return sendProblem(res, 404, `Aucune ruche ne porte l'identifiant ${req.params.id}.`);
+
+  const limit = parseEntier(req.query.limit, 50);
+  if (!(limit >= 1 && limit <= 500)) {
+    return sendProblem(res, 400, "Le paramètre limit doit être un entier compris entre 1 et 500.");
+  }
+  const offset = parseEntier(req.query.offset, 0);
+  if (Number.isNaN(offset)) {
+    return sendProblem(res, 400, "Le paramètre offset doit être un entier positif ou nul.");
+  }
+
+  const ordonnees = measures
+    .filter((m) => m.hive_id === hive.id)
+    .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  res.json({ items: ordonnees.slice(offset, offset + limit), limit, offset });
+});
+
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(3000, () => console.log("API sur http://localhost:3000"));
+const port = Number(process.env.PORT) || 3000;
+app.listen(port, () => console.log(`API sur http://localhost:${port}`));
