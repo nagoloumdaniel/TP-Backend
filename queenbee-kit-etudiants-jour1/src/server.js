@@ -23,4 +23,10 @@ app.get("/api/hives", (req, res) => {
   res.json(!site_id ? hives : hives.filter((h) => h.site_id === site_id));
 });
 
+app.get("/api/hives/:id", (req, res) => {
+  const hive = hives.find((h) => h.id === req.params.id);
+  if (!hive) return res.status(404).json({ error: "Ruche introuvable" });
+  res.json(hive);
+});
+
 app.listen(3000, () => console.log("API sur http://localhost:3000"));
