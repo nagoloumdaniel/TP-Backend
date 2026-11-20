@@ -111,7 +111,21 @@ Corps
 | `timestamp` | texte | oui | date ISO 8601 attendue (format non vérifié), instant de la prise de mesure par le capteur, conservé tel quel |
 | `weight_kg` | nombre | oui | |
 | `hive_id` | texte | non | s'il est présent, il doit être égal à l'`id` du chemin |
-| autres champs (`temp_internal_c`, `humidity_pct`...) | libre | non | conservés tels quels, non validés |
+| `position_lat`, `position_lon`, `temp_internal_c`, `temp_external_c`, `humidity_pct`, `acoustic_activity_score`, `battery_pct` | nombre | non | s'ils sont présents, ils doivent être dans leur plage physique (tableau ci-dessous) |
+| autres champs | libre | non | conservés tels quels, non validés |
+
+Plages physiques acceptées (bornes comprises) :
+
+| Champ | Minimum | Maximum |
+|---|---|---|
+| `position_lat` | -90 | 90 |
+| `position_lon` | -180 | 180 |
+| `weight_kg` | 0 | 150 |
+| `temp_internal_c` | -10 | 60 |
+| `temp_external_c` | -20 | 60 |
+| `humidity_pct` | 0 | 100 |
+| `acoustic_activity_score` | 0 | 1 |
+| `battery_pct` | 0 | 100 |
 
 Réponses
 
@@ -128,7 +142,7 @@ Réponses
 }
 ```
 
-- `400` : `timestamp` absent, `weight_kg` absent ou pas un nombre, ou `hive_id` différent de l'`id` du chemin.
+- `400` : `timestamp` absent, `weight_kg` absent ou pas un nombre, `hive_id` différent de l'`id` du chemin, ou un champ physique présent mais pas un nombre ou hors de sa plage (`detail` : « Le champ weight_kg doit être un nombre compris entre 0 et 150. »).
 
 ```json
 {

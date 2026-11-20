@@ -1,4 +1,5 @@
 import { sendProblem } from "../utils/problem.js";
+import { ConflictError, NotFoundError, ValidationError } from "../errors.js";
 
 // Route inconnue : un 404 au format RFC 9457, au lieu de la page HTML d'Express.
 export function notFoundHandler(req, res) {
@@ -8,6 +9,9 @@ export function notFoundHandler(req, res) {
 // Filet de sécurité : toute erreur non traitée arrive ici. Les quatre paramètres sont
 // obligatoires : c'est à eux qu'Express reconnaît un intergiciel d'erreur.
 export function errorHandler(err, req, res, next) {
+  if (err instanceof NotFoundError) return sendProblem(res, 404, err.message);
+  if (err instanceof ValidationError) return sendProblem(res, 400, err.message);
+  if (err instanceof ConflictError) return sendProblem(res, 409, err.message);
   if (err.type === "entity.parse.failed") {
     return sendProblem(res, 400, "Le corps de la requête n'est pas un JSON valide.");
   }
