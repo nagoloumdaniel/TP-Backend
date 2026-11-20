@@ -107,7 +107,14 @@ Mesures faites avec `scripts/import-measures.js` sur le fichier d'une journée (
 
 Le mode lot est environ 40 fois plus rapide : 5 requêtes au lieu de 4 800 allers-retours avec la base, et un seul `COMMIT` au lieu de 4 800 écritures sur disque.
 
-Non mesuré : le nombre de mesures en base après une erreur à la 2 001e mesure (attendu : mode ligne, les 2 000 premières restent ; mode lot, un `ROLLBACK` annule tout le lot en cours).
+Erreur à la 2 001e mesure, testée le 2026-11-20 : un fichier dont la 2 001e ligne reprend la clé de la 1re (violation de la clé primaire `hive_id` + `measured_at`), importé après `--vider`.
+
+| Mode | Mesures en base après l'erreur |
+|---|---|
+| ligne | 2 000 (les 2 000 premières restent, aucune annulation) |
+| lot | 0 (le `ROLLBACK` annule toute la transaction) |
+
+Le mode ligne laisse donc la base à moitié remplie, le mode lot jamais.
 
 ## TP 6 : validation Joi et erreurs centralisées
 
@@ -163,7 +170,7 @@ Lancé le 2026-11-20 sur la base Docker (compte coord du site SN-CASA, apiculteu
 
 Comptages obtenus sur `GET /api/hives` : admin 400 ruches, coord 50, api1 10, comme attendu. api1 reçoit 403 sur `SN-CASA-011` et 404 sur `XX-NOPE-999`, comme attendu.
 
-Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Avec la base Docker : connexion, 401 sans jeton, les 4 requêtes du journal et les comptages vérifiés. Non vérifié : le blocage après 5 échecs de connexion.
+Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Avec la base Docker : connexion, 401 sans jeton, les 4 requêtes du journal et les comptages vérifiés. Blocage vérifié le 2026-11-20 : 5 mauvais mots de passe donnent 401, le 5e renvoie « Compte bloqué après 5 échecs de connexion, jusqu'à <heure> UTC », et le bon mot de passe est ensuite refusé (401) tant que le compte est bloqué. Après remise à zéro de `failed_attempts` et `locked_until`, la connexion redonne 200.
 
 ## TP 8 : synchronisation idempotente des inspections
 
