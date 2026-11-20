@@ -1,471 +1,1610 @@
 {
   "info": {
     "name": "Queen Bee API",
+    "description": "Jours 1 et 2 (TP1 à TP8). Lancer d'abord le dossier 1 - Connexion : il remplit les jetons admin, coord et api1. Les routes protégées utilisent ensuite le jeton choisi dans chaque requête.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
       "value": "http://localhost:3000"
+    },
+    {
+      "key": "demoPassword",
+      "value": "QueenBee2026!"
+    },
+    {
+      "key": "hiveId",
+      "value": "SN-CASA-001"
+    },
+    {
+      "key": "adminToken",
+      "value": ""
+    },
+    {
+      "key": "coordToken",
+      "value": ""
+    },
+    {
+      "key": "apiToken",
+      "value": ""
+    },
+    {
+      "key": "refreshToken",
+      "value": ""
     }
   ],
   "item": [
     {
-      "name": "GET /health",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/health",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "health"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /api/hives",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /api/hives filtre site_id",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives?site_id=SN-CASA",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives"
-          ],
-          "query": [
+      "name": "0 - Santé",
+      "item": [
+        {
+          "name": "GET /health",
+          "event": [
             {
-              "key": "site_id",
-              "value": "SN-CASA"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
             }
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /api/hives/:id",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001",
-          "host": [
-            "{{baseUrl}}"
           ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET /api/hives/:id (404 ruche inconnue)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "XX-NOPE-999"
-          ]
-        }
-      }
-    },
-    {
-      "name": "POST measures (201)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"timestamp\": \"2026-10-31T10:00:00Z\",\n  \"weight_kg\": 36.84,\n  \"temp_internal_c\": 34.4,\n  \"humidity_pct\": 64\n}"
-        }
-      }
-    },
-    {
-      "name": "POST measures (400 sans timestamp)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"weight_kg\": 36.84\n}"
-        }
-      }
-    },
-    {
-      "name": "POST measures (404 ruche inconnue)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/measures",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "XX-NOPE-999",
-            "measures"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"timestamp\": \"2026-10-31T10:00:00Z\",\n  \"weight_kg\": 36.84,\n  \"temp_internal_c\": 34.4,\n  \"humidity_pct\": 64\n}"
-        }
-      }
-    },
-    {
-      "name": "GET measures (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET measures page 2 (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=10&offset=10",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "10"
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
             },
-            {
-              "key": "offset",
-              "value": "10"
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
             }
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET measures limit=0 (400)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=0",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "0"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET measures limit=501 (400)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=501",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "501"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET measures limit=abc (400)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures?limit=abc",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "measures"
-          ],
-          "query": [
-            {
-              "key": "limit",
-              "value": "abc"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET measures ruche inconnue (404)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/measures",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "XX-NOPE-999",
-            "measures"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET inspections (200)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "inspections"
-          ]
-        }
-      }
-    },
-    {
-      "name": "GET inspections ruche inconnue (404)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/inspections",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "XX-NOPE-999",
-            "inspections"
-          ]
-        }
-      }
-    },
-    {
-      "name": "POST inspections (201)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "inspections"
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
         }
-      }
+      ]
     },
     {
-      "name": "POST inspections colony_status invalide (400)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
+      "name": "1 - Connexion",
+      "item": [
+        {
+          "name": "Login admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();pm.collectionVariables.set(\"adminToken\",j.access_token);",
+                  "pm.collectionVariables.set(\"refreshToken\",j.refresh_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@queenbee.test\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/SN-CASA-001/inspections",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "SN-CASA-001",
-            "inspections"
-          ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"top\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
-        }
-      }
-    },
-    {
-      "name": "POST inspections ruche inconnue (404)",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
+        {
+          "name": "Login coord (SN-CASA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();pm.collectionVariables.set(\"coordToken\",j.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"coord.sn-casa@queenbee.test\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
           }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/inspections",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "hives",
-            "XX-NOPE-999",
-            "inspections"
-          ]
         },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-19T09:30:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain abondant.\"\n}"
+        {
+          "name": "Login api1 (SN-CASA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "const j=pm.response.json();pm.collectionVariables.set(\"apiToken\",j.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"api1.sn-casa@queenbee.test\",\n  \"password\": \"{{demoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login mauvais mot de passe (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 401\",()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@queenbee.test\",\n  \"password\": \"faux\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Attention : 5 échecs de suite verrouillent le compte 15 minutes."
+          }
+        },
+        {
+          "name": "Refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sans jeton (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 401\",()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     {
-      "name": "Route inconnue (404)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/inconnue",
-          "host": [
-            "{{baseUrl}}"
+      "name": "2 - Ruches",
+      "item": [
+        {
+          "name": "Liste admin (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "pm.test(\"400 ruches\",()=>pm.expect(pm.response.json().length).to.eql(400));"
+                ]
+              }
+            }
           ],
-          "path": [
-            "api",
-            "inconnue"
-          ]
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Liste coord (50)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "pm.test(\"50 ruches\",()=>pm.expect(pm.response.json().length).to.eql(50));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coordToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Liste api1 (10)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));",
+                  "pm.test(\"10 ruches\",()=>pm.expect(pm.response.json().length).to.eql(10));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filtre site_id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives?site_id=SN-CASA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives"
+              ],
+              "query": [
+                {
+                  "key": "site_id",
+                  "value": "SN-CASA"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Détail ruche",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ruche inconnue (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 404\",()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/XX-NOPE-999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "XX-NOPE-999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Ruche d'un autre apiculteur (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 403\",()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/SN-CASA-011",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "SN-CASA-011"
+              ]
+            }
+          }
         }
-      }
+      ]
+    },
+    {
+      "name": "3 - Mesures",
+      "item": [
+        {
+          "name": "POST mesure (admin, 201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 ou 200\",()=>pm.expect([200,201]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timestamp\": \"2026-11-20T11:11:11Z\",\n  \"weight_kg\": 32.4,\n  \"temp_internal_c\": 34.5,\n  \"temp_external_c\": 21,\n  \"humidity_pct\": 62,\n  \"acoustic_activity_score\": 0.4,\n  \"battery_pct\": 88\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST mesure invalide (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timestamp\": \"2026-11-20T11:11:11Z\",\n  \"weight_kg\": 999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures page 2",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures?limit=10&offset=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures limit=0 (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures?limit=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures limit=501 (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures?limit=501",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "501"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures limit=abc (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/measures?limit=abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "measures"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "abc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET mesures ruche inconnue (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 404\",()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/measures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "XX-NOPE-999",
+                "measures"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 - Inspections",
+      "item": [
+        {
+          "name": "GET inspections",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/inspections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "inspections"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST inspection (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 201\",()=>pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-02T08:15:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain bien rempli\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/inspections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "inspections"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST colony_status invalide (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-02T08:15:00Z\",\n  \"colony_status\": \"zzz\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain bien rempli\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/{{hiveId}}/inspections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "{{hiveId}}",
+                "inspections"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST ruche inconnue (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 404\",()=>pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{$guid}}\",\n  \"inspected_at\": \"2026-11-02T08:15:00Z\",\n  \"colony_status\": \"forte\",\n  \"queen_present\": true,\n  \"observations\": \"Couvain bien rempli\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/XX-NOPE-999/inspections",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "XX-NOPE-999",
+                "inspections"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 - Synchronisation (TP8)",
+      "item": [
+        {
+          "name": "POST /api/inspections/sync (lot)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 200\",()=>pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inspections\": [\n    {\n      \"id\": \"6f1d2c3a-1b2c-4d5e-8f60-0a1b2c3d9999\",\n      \"inspected_at\": \"2026-11-02T08:15:00Z\",\n      \"colony_status\": \"forte\",\n      \"queen_present\": true,\n      \"observations\": \"Couvain bien rempli\",\n      \"hive_id\": \"SN-CASA-001\"\n    },\n    {\n      \"id\": \"{{$guid}}\",\n      \"inspected_at\": \"2026-11-02T08:15:00Z\",\n      \"colony_status\": \"forte\",\n      \"queen_present\": true,\n      \"observations\": \"Couvain bien rempli\",\n      \"hive_id\": \"SN-CASA-002\"\n    },\n    {\n      \"id\": \"{{$guid}}\",\n      \"inspected_at\": \"2026-11-02T08:15:00Z\",\n      \"colony_status\": \"forte\",\n      \"queen_present\": true,\n      \"observations\": \"Couvain bien rempli\",\n      \"hive_id\": \"XX-NOPE-999\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspections/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inspections",
+                "sync"
+              ]
+            },
+            "description": "Premier envoi : created. Renvoyer la même requête : unchanged pour l'id fixe. Une ruche inconnue donne rejected."
+          }
+        },
+        {
+          "name": "Sync sans jeton (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 401\",()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inspections\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspections/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inspections",
+                "sync"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sync lot vide (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 400\",()=>pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inspections\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspections/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inspections",
+                "sync"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sync par admin (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 403\",()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"inspections\": [\n    {\n      \"id\": \"{{$guid}}\",\n      \"inspected_at\": \"2026-11-02T08:15:00Z\",\n      \"colony_status\": \"forte\",\n      \"queen_present\": true,\n      \"observations\": \"Couvain bien rempli\",\n      \"hive_id\": \"SN-CASA-001\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/inspections/sync",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inspections",
+                "sync"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6 - Requêtes interdites (TP7)",
+      "item": [
+        {
+          "name": "1 - coord sur un autre site (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 403\",()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{coordToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives?site_id=CI-AGBO",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives"
+              ],
+              "query": [
+                {
+                  "key": "site_id",
+                  "value": "CI-AGBO"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2 - api1 écrit une mesure (403)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 403\",()=>pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timestamp\": \"2026-11-20T12:00:00Z\",\n  \"weight_kg\": 32.4,\n  \"temp_internal_c\": 34.5,\n  \"temp_external_c\": 21,\n  \"humidity_pct\": 62,\n  \"acoustic_activity_score\": 0.4,\n  \"battery_pct\": 88\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{apiToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/hives/SN-CASA-001/measures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "hives",
+                "SN-CASA-001",
+                "measures"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4 - jeton falsifié (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"code 401\",()=>pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "jeton.falsifie.xxx",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Le cas 3 (jeton expiré) demande de lancer l'API avec JWT_ACCESS_TTL=10s puis d'attendre 11 s."
+          }
+        }
+      ]
     }
   ]
 }
