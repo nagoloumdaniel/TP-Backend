@@ -98,7 +98,16 @@ Une transaction (`BEGIN` ... `COMMIT`) vit sur une seule connexion. `pool.query(
 Le client n'est jamais rendu au pool. Après une erreur, la connexion reste bloquée (avec une transaction ouverte si le `ROLLBACK` a échoué). Quand les 10 connexions du pool sont ainsi perdues, toute nouvelle requête attend sans fin et l'API ne répond plus.
 
 ### Chronométrage et état après erreur (modes `ligne` et `lot`)
-À compléter après `docker compose up -d` : durée des deux modes sur le même fichier, nombre de mesures en base après une erreur à la 2 001e mesure (mode ligne : les 2 000 premières restent, mode lot : un `ROLLBACK` annule tout le lot en cours).
+Mesures faites avec `scripts/import-measures.js` sur le fichier d'une journée (4 800 mesures, base PostgreSQL dans Docker). Les durées varient d'un poste à l'autre.
+
+| Mode | Mesures insérées | Durée (ms) |
+|---|---|---|
+| ligne (un `INSERT` par mesure) | 4 800 | 7 829 |
+| lot (1 000 lignes par requête, une transaction) | 4 800 | 196 |
+
+Le mode lot est environ 40 fois plus rapide : 5 requêtes au lieu de 4 800 allers-retours avec la base, et un seul `COMMIT` au lieu de 4 800 écritures sur disque.
+
+Non mesuré : le nombre de mesures en base après une erreur à la 2 001e mesure (attendu : mode ligne, les 2 000 premières restent ; mode lot, un `ROLLBACK` annule tout le lot en cours).
 
 ## TP 6 : validation Joi et erreurs centralisées
 
