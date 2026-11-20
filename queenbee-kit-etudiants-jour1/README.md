@@ -35,3 +35,26 @@ Journal des requêtes : `requestLogger` et `morgan("dev")` comparés. `morgan` d
 ## TP 3 : contrat de l'API
 
 Le contrat de chaque route est dans `docs/api.md` (paramètres, corps, codes, exemples). Toutes les erreurs suivent la RFC 9457 (`application/problem+json`), y compris la route inconnue et le JSON mal formé. Les requêtes de test sont dans `docs/queenbee.postman_collection.json`.
+
+## TP 4 : passage en couches
+
+Chaque requête traverse quatre couches, dans cet ordre :
+
+| Couche | Fichiers | Rôle |
+|---|---|---|
+| Routeur | `src/routes/hives/hives.router.js` | URL, verbe, intergiciels. Aucune logique. |
+| Contrôleur | `src/controllers/hives.controller.js` | Lit la requête, choisit la réponse. Aucune règle métier. |
+| Service | `src/services/*.service.js` | Règles métier (validation, plages physiques, doublons). Ne connaît ni `req` ni `res`. |
+| Dépôt | `src/repositories/memory/*.js` | Lit et écrit les données. Ne choisit jamais un code HTTP. |
+
+Les services sont des fabriques qui reçoivent leurs dépendances (`createMeasuresService({ hivesService, measuresRepository })`) et n'importent jamais un dépôt. `createApp` (`src/app.js`) assemble le tout à partir des dépôts reçus ; `src/server.js` crée les dépôts en mémoire et démarre l'écoute. Remplacer la mémoire par PostgreSQL ne touchera que `repositories/`.
+
+Erreurs : les services lèvent `NotFoundError`, `ValidationError` ou `ConflictError` (`src/errors.js`), et `errorHandler` les traduit en 404, 400 et 409 au format RFC 9457. `ConflictError` n'était pas dans l'énoncé : il est nécessaire au 409 des inspections.
+
+Configuration : `src/config.js` lit `PORT` et `NODE_ENV` et arrête le démarrage avec un message clair si une valeur est invalide. Copier `.env.example` en `.env` (ignoré par git), puis `npm run dev`.
+
+Plages physiques (UC-CY02) vérifiées par `measures.service.js`, erreur 400 hors plage : `position_lat` -90 à 90, `position_lon` -180 à 180, `weight_kg` 0 à 150, `temp_internal_c` -10 à 60, `temp_external_c` -20 à 60, `humidity_pct` 0 à 100, `acoustic_activity_score` 0 à 1, `battery_pct` 0 à 100. Un champ présent doit être un nombre. Ces cas sont décrits dans `docs/api.md`.
+
+Tests : `npm test` (`node:test`). Le test « refuse un poids hors de sa plage physique » a été vérifié en le faisant échouer exprès (limite 150 remplacée par 1500 : 1 test en échec), puis la règle a été restaurée.
+
+Vérification de la règle de couches : `grep -r repositories src/controllers` ne renvoie rien.
