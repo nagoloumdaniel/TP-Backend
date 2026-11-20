@@ -3,12 +3,11 @@ const COLONNES = "id, hive_id, inspected_at, queen_present, colony_status, obser
 export function createInspectionsRepository(pool) {
   return {
     async add(i) {
-      // Pas encore d'authentification : l'auteur est le propriétaire de la ruche.
       const { rows } = await pool.query(
         `INSERT INTO inspections (id, hive_id, author_id, inspected_at, queen_present, colony_status, observations)
-         VALUES ($1, $2, (SELECT owner_id FROM hives WHERE id = $2), $3, $4, $5, $6)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          RETURNING ${COLONNES}`,
-        [i.id, i.hive_id, i.inspected_at, i.queen_present ?? null, i.colony_status, i.observations ?? null],
+        [i.id, i.hive_id, i.author_id, i.inspected_at, i.queen_present ?? null, i.colony_status, i.observations ?? null],
       );
       return rows[0];
     },

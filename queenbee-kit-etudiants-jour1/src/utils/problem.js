@@ -1,6 +1,8 @@
 // Intitulés RFC 9457 : un titre par code, le même pour toutes les erreurs de ce code.
 const TITLES = {
   400: "Requête invalide",
+  401: "Authentification requise",
+  403: "Accès refusé",
   404: "Ressource introuvable",
   409: "Conflit",
   413: "Contenu trop volumineux",
