@@ -11,9 +11,12 @@ const ADMIN = { id: "u-admin", role: "admin", site_id: null };
 function creerService() {
   const stockees = [];
   const measuresRepository = {
+    // Imite INSERT … ON CONFLICT (hive_id, measured_at) DO NOTHING.
     async add(m) {
+      const existante = stockees.find((x) => x.hive_id === m.hive_id && x.timestamp === m.timestamp);
+      if (existante) return { measure: existante, created: false };
       stockees.push(m);
-      return { ...m };
+      return { measure: m, created: true };
     },
     async findByHive(hiveId, { limit, offset }) {
       return stockees
@@ -35,9 +38,10 @@ const mesure = (extra = {}) => ({ timestamp: "2026-11-20T10:00:00Z", weight_kg: 
 
 test("accepte une mesure dans les plages et la complète avec hive_id et site_id", async () => {
   const { service, stockees } = creerService();
-  const res = await service.addMeasure(ADMIN, RUCHE.id, mesure({ temp_internal_c: 34.4, humidity_pct: 64 }));
-  assert.equal(res.hive_id, RUCHE.id);
-  assert.equal(res.site_id, RUCHE.site_id);
+  const { measure, created } = await service.addMeasure(ADMIN, RUCHE.id, mesure({ temp_internal_c: 34.4, humidity_pct: 64 }));
+  assert.equal(created, true);
+  assert.equal(measure.hive_id, RUCHE.id);
+  assert.equal(measure.site_id, RUCHE.site_id);
   assert.equal(stockees.length, 1);
 });
 
@@ -64,4 +68,12 @@ test("pagine de la plus récente à la plus ancienne", async () => {
   await service.addMeasure(ADMIN, RUCHE.id, mesure({ timestamp: "2026-11-02T00:00:00Z" }));
   const page = await service.listMeasures(ADMIN, RUCHE.id, { limit: 2, offset: 0 });
   assert.deepEqual(page.items.map((m) => m.timestamp.slice(0, 10)), ["2026-11-03", "2026-11-02"]);
+});
+
+test("une trame reçue deux fois n'est enregistrée qu'une fois", async () => {
+  const { service, stockees } = creerService();
+  await service.addMeasure(ADMIN, RUCHE.id, mesure());
+  const second = await service.addMeasure(ADMIN, RUCHE.id, mesure());
+  assert.equal(second.created, false);
+  assert.equal(stockees.length, 1);
 });

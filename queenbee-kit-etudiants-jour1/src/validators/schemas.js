@@ -26,14 +26,26 @@ export const measureSchema = Joi.object({
   battery_pct: Joi.number().integer().min(0).max(100).allow(null),
 });
 
-// Joi.object refuse tout champ non déclaré : un client ne peut pas glisser un author_id.
-export const inspectionSchema = Joi.object({
+// Champs communs à l'inspection seule et au lot de synchronisation.
+const inspectionFields = {
   id: Joi.string().guid().required(),
   hive_id: Joi.string(),
   inspected_at: Joi.date().iso().max("now").raw().required(),
   colony_status: Joi.string().valid("forte", "normale", "faible", "morte").required(),
   queen_present: Joi.boolean().allow(null),
   observations: Joi.string().max(2000).allow("", null),
+};
+
+// Joi.object refuse tout champ non déclaré : un client ne peut pas glisser un author_id.
+export const inspectionSchema = Joi.object(inspectionFields);
+
+// Dans le lot, chaque inspection précise sa ruche ; version n'est là que pour une modification.
+export const syncSchema = Joi.object({
+  inspections: Joi.array()
+    .items(Joi.object({ ...inspectionFields, hive_id: Joi.string().required(), version: Joi.number().integer().min(1) }))
+    .min(1)
+    .max(500)
+    .required(),
 });
 
 // tlds: { allow: false } : sinon les adresses en .test du jeu de données seraient refusées.

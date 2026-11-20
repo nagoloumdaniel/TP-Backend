@@ -10,6 +10,7 @@ export function createMeasuresService({ hivesService, measuresRepository }) {
         throw new ValidationError("Le champ hive_id ne correspond pas à la ruche du chemin.");
       }
       // Le timestamp est celui de la trame (instant de la prise par le capteur), pas celui de la réception.
+      // Renvoie { measure, created } : le contrôleur répond 201 si created, 200 si la trame était déjà reçue.
       return measuresRepository.add({ ...data, hive_id: hive.id, site_id: hive.site_id });
     },
 
