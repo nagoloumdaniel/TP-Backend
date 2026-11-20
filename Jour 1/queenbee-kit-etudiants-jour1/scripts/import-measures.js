@@ -122,7 +122,12 @@ try {
 } catch (err) {
   if (err.code === "23505") {
     // 23505 : code PostgreSQL d'une violation de contrainte d'unicité (ici, la clé primaire)
-    console.error("Ces mesures sont déjà en base (clé primaire hive_id + measured_at). Relancez avec --vider.");
+    console.error(`Doublon sur la clé primaire (hive_id + measured_at). ${err.detail ?? ""}`.trim());
+    console.error(
+      vider
+        ? "--vider a déjà été appliqué : la même mesure apparaît donc deux fois dans le fichier. Corrigez le fichier."
+        : "Soit ces mesures sont déjà en base (relancez avec --vider), soit le fichier contient deux fois la même mesure.",
+    );
   } else {
     console.error(`Erreur : ${err.message}`);
   }
