@@ -143,18 +143,18 @@ Choix :
 
 ### Journal des 4 requêtes interdites
 
-À remplir après lancement de la base (Docker n'était pas démarré lors du développement) : requête, code attendu, code obtenu.
+Lancé le 2026-11-20 sur la base Docker (compte coord du site SN-CASA, apiculteur api1.sn-casa, mot de passe de démo).
 
 | # | Requête | Attendu | Obtenu |
 |---|---|---|---|
-| 1 | coord : `GET /api/hives?site_id=CI-AGBO` | 403 « Vous n'avez pas accès au site CI-AGBO. » | à vérifier |
-| 2 | api1 : `POST /api/hives/SN-CASA-001/measures` | 403 « Action réservée aux rôles suivants : admin. » | à vérifier |
-| 3 | jeton expiré (`JWT_ACCESS_TTL=10s`) | 401 « Jeton d'accès invalide ou expiré. » | à vérifier |
-| 4 | jeton falsifié | 401, même message | à vérifier |
+| 1 | coord : `GET /api/hives?site_id=CI-AGBO` | 403 « Vous n'avez pas accès au site CI-AGBO. » | 403, même message (conforme) |
+| 2 | api1 : `POST /api/hives/SN-CASA-001/measures` | 403 « Action réservée aux rôles suivants : admin. » | 403, même message (conforme) |
+| 3 | jeton expiré (`JWT_ACCESS_TTL=10s`) | 401 « Jeton d'accès invalide ou expiré. » | 200 juste après la connexion, puis 401 avec ce message après 12 s (conforme) |
+| 4 | jeton falsifié | 401, même message | 401, même message (conforme) |
 
-Comptages attendus : admin 400 ruches, coord 50, api1 10 ; api1 reçoit 403 sur `SN-CASA-011` et 404 sur `XX-NOPE-999`.
+Comptages obtenus sur `GET /api/hives` : admin 400 ruches, coord 50, api1 10, comme attendu. api1 reçoit 403 sur `SN-CASA-011` et 404 sur `XX-NOPE-999`, comme attendu.
 
-Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Avec la base Docker : connexion en apiculteur et réponse 401 sans jeton vérifiées. Non vérifiés : les 4 requêtes du journal, les comptages et le blocage après 5 échecs.
+Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Avec la base Docker : connexion, 401 sans jeton, les 4 requêtes du journal et les comptages vérifiés. Non vérifié : le blocage après 5 échecs de connexion.
 
 ## TP 8 : synchronisation idempotente des inspections
 
