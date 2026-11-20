@@ -30,8 +30,8 @@ function verifierPlages(mesure) {
 
 export function createMeasuresService({ hivesService, measuresRepository }) {
   return {
-    add(hiveId, body) {
-      const hive = hivesService.getById(hiveId);
+    async add(hiveId, body) {
+      const hive = await hivesService.getById(hiveId);
       const donnees = body ?? {};
       if (!donnees.timestamp || typeof donnees.weight_kg !== "number") {
         throw new ValidationError("Les champs timestamp et weight_kg (nombre) sont obligatoires.");
@@ -45,8 +45,8 @@ export function createMeasuresService({ hivesService, measuresRepository }) {
       return measuresRepository.add({ ...donnees, hive_id: hive.id, site_id: hive.site_id });
     },
 
-    list(hiveId, query = {}) {
-      const hive = hivesService.getById(hiveId);
+    async list(hiveId, query = {}) {
+      const hive = await hivesService.getById(hiveId);
       const limit = parseEntier(query.limit, 50);
       if (!(limit >= 1 && limit <= 500)) {
         throw new ValidationError("Le paramètre limit doit être un entier compris entre 1 et 500.");
@@ -56,10 +56,9 @@ export function createMeasuresService({ hivesService, measuresRepository }) {
         throw new ValidationError("Le paramètre offset doit être un entier positif ou nul.");
       }
 
-      const ordonnees = [...measuresRepository.findByHive(hive.id)].sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp),
-      );
-      return { items: ordonnees.slice(offset, offset + limit), limit, offset };
+      // Tri (plus récente d'abord) et pagination sont faits par le dépôt : en SQL, ORDER BY + LIMIT/OFFSET.
+      const items = await measuresRepository.findByHive(hive.id, { limit, offset });
+      return { items, limit, offset };
     },
   };
 }

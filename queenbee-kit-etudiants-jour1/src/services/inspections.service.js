@@ -6,13 +6,13 @@ const ETATS_COLONIE = ["forte", "normale", "faible", "morte"];
 
 export function createInspectionsService({ hivesService, inspectionsRepository }) {
   return {
-    list(hiveId) {
-      const hive = hivesService.getById(hiveId);
+    async list(hiveId) {
+      const hive = await hivesService.getById(hiveId);
       return inspectionsRepository.findByHive(hive.id);
     },
 
-    add(hiveId, body) {
-      const hive = hivesService.getById(hiveId);
+    async add(hiveId, body) {
+      const hive = await hivesService.getById(hiveId);
       const b = body ?? {};
       if (typeof b.id !== "string" || !UUID.test(b.id)) {
         throw new ValidationError("Le champ id est obligatoire et doit être un UUID.");
@@ -29,7 +29,7 @@ export function createInspectionsService({ hivesService, inspectionsRepository }
       if (b.observations !== undefined && typeof b.observations !== "string") {
         throw new ValidationError("Le champ observations doit être un texte.");
       }
-      if (inspectionsRepository.existsById(b.id)) {
+      if (await inspectionsRepository.existsById(b.id)) {
         throw new ConflictError("Une inspection porte déjà cet identifiant.");
       }
 
