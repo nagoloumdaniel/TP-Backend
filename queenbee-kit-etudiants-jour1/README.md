@@ -131,3 +131,25 @@ Choix :
 Comptages attendus : admin 400 ruches, coord 50, api1 10 ; api1 reçoit 403 sur `SN-CASA-011` et 404 sur `XX-NOPE-999`.
 
 Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Non vérifié : tout ce qui touche PostgreSQL (login réel, comptages, blocage de compte).
+
+## TP 8 : synchronisation idempotente des inspections
+
+Une inspection saisie hors connexion peut être envoyée plusieurs fois (réseau coupé au mauvais moment). Le serveur doit donner le même résultat à chaque envoi.
+
+- `POST /api/inspections/sync` reçoit un lot `{ "inspections": [...] }` (1 à 500 éléments) et renvoie `{ summary, results }`. Le lot bien formé répond toujours 200, chaque élément a son propre statut : `created`, `unchanged`, `updated`, `conflict` ou `rejected`.
+- Idempotence : `INSERT ... ON CONFLICT (id) DO NOTHING`. L'identifiant (UUID) est fixé par l'appareil, un rejeu ne crée donc jamais de doublon. Pour les mesures, la clé est `(hive_id, measured_at)`.
+- `POST /api/hives/:id/measures` et `POST /api/hives/:id/inspections` répondent 201 à la création et 200 au rejeu.
+- Modification : l'appareil envoie la `version` qu'il connaît. Le dépôt exécute `UPDATE ... WHERE id = $1 AND hive_id = $2 AND version = $7` (verrouillage optimiste).
+
+### Règle de conflit : le serveur l'emporte
+
+1. Si la version envoyée n'est pas la version du serveur, la modification est refusée (`conflict`) et la ligne du serveur n'est pas touchée.
+2. La réponse contient `current` : l'appareil affiche la version du serveur et laisse l'utilisateur recommencer sa saisie.
+3. Choix assumé : une inspection est un constat de terrain, perdre une saisie périmée coûte moins cher qu'écraser en silence une correction faite entre-temps.
+
+### Vérifications à faire avec la base (non vérifiées ici, Docker était arrêté)
+
+1. `docker compose up -d`, puis `npm start`.
+2. Se connecter en apiculteur, puis envoyer `tp/tp8-sync/lot.json` à `POST /api/inspections/sync` : 3 `created` et 1 `rejected` (ruche d'un autre apiculteur).
+3. Renvoyer le même lot : 3 `unchanged`, 1 `rejected`, aucune ligne en plus (`SELECT count(*) FROM inspections`).
+4. Modifier une inspection avec `version: 1` : `updated`, version 2. Renvoyer la même avec `version: 1` : `conflict` avec `current`.

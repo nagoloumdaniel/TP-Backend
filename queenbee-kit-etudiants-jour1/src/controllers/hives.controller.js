@@ -4,12 +4,17 @@ export function createHivesController({ hivesService, measuresService, inspectio
   return {
     list: async (req, res) => res.json(await hivesService.listHives(req.user, req.validated)),
     get: async (req, res) => res.json(await hivesService.getHive(req.user, req.params.id)),
-    addMeasure: async (req, res) =>
-      res.status(201).json(await measuresService.addMeasure(req.user, req.params.id, req.validated)),
+    // 201 à la création, 200 si la trame était déjà reçue : le rejeu n'est pas une erreur.
+    addMeasure: async (req, res) => {
+      const { measure, created } = await measuresService.addMeasure(req.user, req.params.id, req.validated);
+      res.status(created ? 201 : 200).json(measure);
+    },
     listMeasures: async (req, res) =>
       res.json(await measuresService.listMeasures(req.user, req.params.id, req.validated)),
     listInspections: async (req, res) => res.json(await inspectionsService.listInspections(req.user, req.params.id)),
-    addInspection: async (req, res) =>
-      res.status(201).json(await inspectionsService.addInspection(req.user, req.params.id, req.validated)),
+    addInspection: async (req, res) => {
+      const { inspection, created } = await inspectionsService.addInspection(req.user, req.params.id, req.validated);
+      res.status(created ? 201 : 200).json(inspection);
+    },
   };
 }
