@@ -45,7 +45,7 @@ Chaque requête traverse quatre couches, dans cet ordre :
 | Routeur | `src/routes/hives/hives.router.js` | URL, verbe, intergiciels. Aucune logique. |
 | Contrôleur | `src/controllers/hives.controller.js` | Lit la requête, choisit la réponse. Aucune règle métier. |
 | Service | `src/services/*.service.js` | Règles métier (validation, plages physiques, doublons). Ne connaît ni `req` ni `res`. |
-| Dépôt | `src/repositories/memory/*.js` | Lit et écrit les données. Ne choisit jamais un code HTTP. |
+| Dépôt | `src/repositories/postgres/*.js` | Lit et écrit les données. Ne choisit jamais un code HTTP. |
 
 Les services sont des fabriques qui reçoivent leurs dépendances (`createMeasuresService({ hivesService, measuresRepository })`) et n'importent jamais un dépôt. `createApp` (`src/app.js`) assemble le tout à partir des dépôts reçus ; `src/server.js` crée les dépôts en mémoire et démarre l'écoute. Remplacer la mémoire par PostgreSQL ne touchera que `repositories/`.
 
@@ -61,7 +61,7 @@ Vérification de la règle de couches : `grep -r repositories src/controllers` n
 
 ## TP 5 : PostgreSQL
 
-Démarrage : `docker compose up -d` (service `db`, PostgreSQL 17), puis `npm run dev`. Les variables `DB_*` sont dans `.env` (ignoré par git, `.env.example` en donne les noms). `STORAGE=memory` relance l'API sur les dépôts en mémoire, sans base.
+Démarrage : `docker compose up -d` (service `db`, PostgreSQL 17), puis `npm run dev`. Les variables `DB_*` sont dans `.env` (ignoré par git, `.env.example` en donne les noms). Le mode mémoire a été retiré au TP 7 (l'énoncé l'exige) : la base est maintenant obligatoire.
 
 Le choix du stockage se fait uniquement dans `src/server.js`. Les dépôts PostgreSQL (`src/repositories/postgres/`) n'utilisent que des requêtes paramétrées (`$1`, `$2`), jamais de `SELECT *`, et renomment les colonnes pour garder le contrat JSON du TP 3 (`measured_at AS timestamp`, `lat AS position_lat`).
 
@@ -94,3 +94,40 @@ Vérifié (mode mémoire, serveur lancé, puis arrêté) :
 - JSON cassé : 400 ; `grep "try {" src/controllers` : aucun résultat ; `npm test` : 18 tests verts.
 
 Non vérifié (Docker arrêté sur ce poste) : le rejeu d'une mesure qui doit donner 409 (contrainte d'unicité PostgreSQL) et l'absence de « duplicate key » dans la réponse. En mode mémoire un rejeu est accepté, il n'y a pas de contrainte d'unicité.
+
+## TP 7 : authentification JWT et contrôle d'accès
+
+Comptes de démonstration (mot de passe commun `QueenBee2026!`) : `admin@queenbee.test`, `gestion@queenbee.test`, `coord.sn-casa@queenbee.test`, `api1.sn-casa@queenbee.test`.
+
+Routes : `POST /api/auth/login`, `POST /api/auth/refresh`, `GET /api/auth/me`, `POST /api/auth/register` (admin seulement). Toutes les routes `/api/hives` exigent un jeton `Authorization: Bearer ...`.
+
+Choix :
+- JWT HS256, émetteur `queenbee-api`, audience `queenbee`, champ `type` (`access` ou `refresh`) vérifié, deux secrets distincts dans `.env` (jamais dans git).
+- Mots de passe hachés avec bcryptjs. Un compte inconnu et un mauvais mot de passe renvoient le même message (pas d'énumération de comptes). Après 5 échecs, le compte est bloqué 15 minutes.
+- Le rôle et le site viennent de la base à chaque requête, pas du jeton.
+- 404 avant 403 : une ruche inexistante répond 404 à tous les rôles.
+- L'auteur d'une inspection est `req.user.id`, jamais une valeur du corps.
+
+| Rôle | Ruches visibles | Peut envoyer |
+|---|---|---|
+| admin | toutes | mesures et comptes |
+| gestionnaire | toutes | rien |
+| coordinateur | celles de son site | inspections |
+| apiculteur | les siennes (`owner_id`) | inspections |
+
+Écarts déclarés : les services prennent `user` en premier argument et sont renommés (`getHive`, `listHives`, `addMeasure`...). Le mode mémoire est supprimé.
+
+### Journal des 4 requêtes interdites
+
+À remplir après lancement de la base (Docker n'était pas démarré lors du développement) : requête, code attendu, code obtenu.
+
+| # | Requête | Attendu | Obtenu |
+|---|---|---|---|
+| 1 | coord : `GET /api/hives?site_id=CI-AGBO` | 403 « Vous n'avez pas accès au site CI-AGBO. » | à vérifier |
+| 2 | api1 : `POST /api/hives/SN-CASA-001/measures` | 403 « Action réservée aux rôles suivants : admin. » | à vérifier |
+| 3 | jeton expiré (`JWT_ACCESS_TTL=10s`) | 401 « Jeton d'accès invalide ou expiré. » | à vérifier |
+| 4 | jeton falsifié | 401, même message | à vérifier |
+
+Comptages attendus : admin 400 ruches, coord 50, api1 10 ; api1 reçoit 403 sur `SN-CASA-011` et 404 sur `XX-NOPE-999`.
+
+Vérifié sans base : `npm test` (22 tests verts, dont `canAccessHive`, 404 avant 403, filtres par rôle). Non vérifié : tout ce qui touche PostgreSQL (login réel, comptages, blocage de compte).

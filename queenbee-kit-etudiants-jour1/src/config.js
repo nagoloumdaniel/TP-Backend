@@ -1,5 +1,4 @@
 const ENVIRONNEMENTS = ["development", "test", "production"];
-const STOCKAGES = ["postgres", "memory"];
 
 function entierBorne(nom, brut, max) {
   const n = /^\d+$/.test(brut) ? Number(brut) : NaN;
@@ -17,21 +16,31 @@ export function loadConfig(env = process.env) {
     throw new Error(`NODE_ENV invalide : "${nodeEnv}". Attendu : ${ENVIRONNEMENTS.join(", ")}.`);
   }
 
-  const storage = env.STORAGE ?? "postgres";
-  if (!STOCKAGES.includes(storage)) {
-    throw new Error(`STORAGE invalide : "${storage}". Attendu : ${STOCKAGES.join(" ou ")}.`);
+  // Aucune valeur par défaut pour un mot de passe ni pour un secret.
+  const password = env.DB_PASSWORD ?? "";
+  if (password === "") {
+    throw new Error("DB_PASSWORD est obligatoire (voir .env.example).");
   }
 
-  // Aucune valeur par défaut pour un mot de passe.
-  const password = env.DB_PASSWORD ?? "";
-  if (storage === "postgres" && password === "") {
-    throw new Error("DB_PASSWORD est obligatoire quand STORAGE vaut postgres (voir .env.example).");
+  const accessSecret = env.JWT_ACCESS_SECRET ?? "";
+  const refreshSecret = env.JWT_REFRESH_SECRET ?? "";
+  if (accessSecret === "") throw new Error("JWT_ACCESS_SECRET est obligatoire (voir .env.example).");
+  if (refreshSecret === "") throw new Error("JWT_REFRESH_SECRET est obligatoire (voir .env.example).");
+  if (accessSecret === refreshSecret) {
+    throw new Error("JWT_ACCESS_SECRET et JWT_REFRESH_SECRET doivent être différents.");
   }
 
   return {
     port,
     nodeEnv,
-    storage,
+    auth: {
+      accessSecret,
+      refreshSecret,
+      accessTtl: env.JWT_ACCESS_TTL ?? "15m",
+      refreshTtl: env.JWT_REFRESH_TTL ?? "7d",
+      maxFailedLogins: 5,
+      lockMinutes: 15,
+    },
     db: {
       host: env.DB_HOST ?? "localhost",
       port: entierBorne("DB_PORT", env.DB_PORT ?? "5432", 65535),

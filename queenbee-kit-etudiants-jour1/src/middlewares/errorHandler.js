@@ -10,7 +10,16 @@ export function notFoundHandler(req, res) {
 // c'est à eux qu'Express reconnaît un intergiciel d'erreur.
 // Le message d'une erreur PostgreSQL ne part jamais dans la réponse : il cite tables et contraintes.
 export function errorHandler(err, req, res, next) {
-  if (err instanceof AppError) return sendProblem(res, err.status, err.message);
+  if (err instanceof AppError) {
+    // Journal des requêtes interdites : chaque refus laisse une trace.
+    if (err.status === 401 || err.status === 403) {
+      console.warn(`[accès refusé] ${err.status} ${req.method} ${req.originalUrl} ip=${req.ip} utilisateur=${req.user?.id ?? "-"}`);
+    }
+    if (err.status === 401) {
+      res.set("WWW-Authenticate", 'Bearer realm="queenbee"'); // schéma attendu (RFC 6750)
+    }
+    return sendProblem(res, err.status, err.message);
+  }
   if (err.type === "entity.parse.failed") {
     return sendProblem(res, 400, "Le corps de la requête n'est pas un JSON valide.");
   }
