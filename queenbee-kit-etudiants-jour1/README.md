@@ -58,3 +58,20 @@ Plages physiques (UC-CY02) vérifiées par `measures.service.js`, erreur 400 hor
 Tests : `npm test` (`node:test`). Le test « refuse un poids hors de sa plage physique » a été vérifié en le faisant échouer exprès (limite 150 remplacée par 1500 : 1 test en échec), puis la règle a été restaurée.
 
 Vérification de la règle de couches : `grep -r repositories src/controllers` ne renvoie rien.
+
+## TP 5 : PostgreSQL
+
+Démarrage : `docker compose up -d` (service `db`, PostgreSQL 17), puis `npm run dev`. Les variables `DB_*` sont dans `.env` (ignoré par git, `.env.example` en donne les noms). `STORAGE=memory` relance l'API sur les dépôts en mémoire, sans base.
+
+Le choix du stockage se fait uniquement dans `src/server.js`. Les dépôts PostgreSQL (`src/repositories/postgres/`) n'utilisent que des requêtes paramétrées (`$1`, `$2`), jamais de `SELECT *`, et renomment les colonnes pour garder le contrat JSON du TP 3 (`measured_at AS timestamp`, `lat AS position_lat`).
+
+Écart avec l'énoncé : les services et le contrôleur sont devenus `async`, car un dépôt PostgreSQL renvoie des promesses. La logique métier n'a pas changé. La pagination des mesures (tri récent d'abord, LIMIT/OFFSET) est maintenant faite par le dépôt, en SQL côté PostgreSQL et par un tri équivalent côté mémoire.
+
+### Pourquoi `pool.connect()` et pas `pool.query()` pour l'import par lot ?
+Une transaction (`BEGIN` ... `COMMIT`) vit sur une seule connexion. `pool.query()` peut prendre une connexion différente à chaque appel, donc le `BEGIN` et les `INSERT` ne seraient pas dans la même transaction. `pool.connect()` réserve un client précis pour toute la transaction.
+
+### Que se passe-t-il sans `client.release()` dans le `finally` ?
+Le client n'est jamais rendu au pool. Après une erreur, la connexion reste bloquée (avec une transaction ouverte si le `ROLLBACK` a échoué). Quand les 10 connexions du pool sont ainsi perdues, toute nouvelle requête attend sans fin et l'API ne répond plus.
+
+### Chronométrage et état après erreur (modes `ligne` et `lot`)
+À compléter après `docker compose up -d` : durée des deux modes sur le même fichier, nombre de mesures en base après une erreur à la 2 001e mesure (mode ligne : les 2 000 premières restent, mode lot : un `ROLLBACK` annule tout le lot en cours).

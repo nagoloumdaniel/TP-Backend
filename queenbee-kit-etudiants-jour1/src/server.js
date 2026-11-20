@@ -1,21 +1,25 @@
-import { loadConfig } from "./config.js";
+import { config } from "./config.js";
 import { createApp } from "./app.js";
-import { createMemoryHivesRepository } from "./repositories/memory/hives.repository.js";
-import { createMemoryMeasuresRepository } from "./repositories/memory/measures.repository.js";
-import { createMemoryInspectionsRepository } from "./repositories/memory/inspections.repository.js";
+import { createMemoryRepositories } from "./repositories/memory/index.js";
+import { createPostgresRepositories } from "./repositories/postgres/index.js";
+import { createPool } from "./db.js";
 
-let config;
-try {
-  config = loadConfig();
-} catch (err) {
-  console.error(`Démarrage impossible : ${err.message}`);
-  process.exit(1);
+let repositories;
+if (config.storage === "postgres") {
+  const pool = createPool();
+  try {
+    await pool.query("SELECT 1"); // un message clair maintenant, plutôt qu'une erreur à la 1re requête
+  } catch (err) {
+    console.error(`Impossible de joindre PostgreSQL sur ${config.db.host}:${config.db.port} : ${err.message || err.code}`);
+    process.exit(1);
+  }
+  repositories = createPostgresRepositories(pool);
+} else {
+  repositories = createMemoryRepositories();
 }
 
-const app = createApp({
-  hivesRepository: createMemoryHivesRepository(),
-  measuresRepository: createMemoryMeasuresRepository(),
-  inspectionsRepository: createMemoryInspectionsRepository(),
-});
+const app = createApp(repositories);
 
-app.listen(config.port, () => console.log(`API sur http://localhost:${config.port} (${config.nodeEnv})`));
+app.listen(config.port, () => {
+  console.log(`API Queen Bee sur http://localhost:${config.port} (stockage : ${config.storage})`);
+});
