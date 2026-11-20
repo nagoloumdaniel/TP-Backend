@@ -14,7 +14,7 @@ export function createApp({ hivesRepository, measuresRepository, inspectionsRepo
   const controller = createHivesController({ hivesService, measuresService, inspectionsService });
 
   const app = express();
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
   app.use(requestLogger);
 
   app.get("/health", (req, res) => res.json({ status: "ok" }));

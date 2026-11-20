@@ -53,7 +53,7 @@ Erreurs : les services lèvent `NotFoundError`, `ValidationError` ou `ConflictEr
 
 Configuration : `src/config.js` lit `PORT` et `NODE_ENV` et arrête le démarrage avec un message clair si une valeur est invalide. Copier `.env.example` en `.env` (ignoré par git), puis `npm run dev`.
 
-Plages physiques (UC-CY02) vérifiées par `measures.service.js`, erreur 400 hors plage : `position_lat` -90 à 90, `position_lon` -180 à 180, `weight_kg` 0 à 150, `temp_internal_c` -10 à 60, `temp_external_c` -20 à 60, `humidity_pct` 0 à 100, `acoustic_activity_score` 0 à 1, `battery_pct` 0 à 100. Un champ présent doit être un nombre. Ces cas sont décrits dans `docs/api.md`.
+Plages physiques (UC-CY02) vérifiées depuis le TP 6 par `validators/schemas.js` (Joi), erreur 400 hors plage : `position_lat` -90 à 90, `position_lon` -180 à 180, `weight_kg` 0 à 150, `temp_internal_c` -10 à 60, `temp_external_c` -20 à 60, `humidity_pct` 0 à 100, `acoustic_activity_score` 0 à 1, `battery_pct` 0 à 100. Un champ présent doit être un nombre. Ces cas sont décrits dans `docs/api.md`.
 
 Tests : `npm test` (`node:test`). Le test « refuse un poids hors de sa plage physique » a été vérifié en le faisant échouer exprès (limite 150 remplacée par 1500 : 1 test en échec), puis la règle a été restaurée.
 
@@ -75,3 +75,22 @@ Le client n'est jamais rendu au pool. Après une erreur, la connexion reste bloq
 
 ### Chronométrage et état après erreur (modes `ligne` et `lot`)
 À compléter après `docker compose up -d` : durée des deux modes sur le même fichier, nombre de mesures en base après une erreur à la 2 001e mesure (mode ligne : les 2 000 premières restent, mode lot : un `ROLLBACK` annule tout le lot en cours).
+
+## TP 6 : validation Joi et erreurs centralisées
+
+Les contrôles de forme (types, plages, champs obligatoires, champs inconnus) sont déclarés dans `src/validators/schemas.js` et appliqués par le middleware `validate(schema, source)` (`src/middlewares/validate.js`), branché dans le routeur. Les données converties arrivent dans `req.validated` : avec Express 5, `req.query` est en lecture seule. Les messages sont en français (`src/validators/messages.js`, clé `date.max` ajoutée pour « ne peut pas être dans le futur »).
+
+Les services ne gardent que ce qui exige de connaître la ruche ou la base : ruche inconnue (404), `hive_id` du corps différent de celui du chemin (400), identifiant d'inspection déjà pris (409). Les contrôleurs n'ont plus aucun `try/catch` : Express 5 envoie les erreurs asynchrones à `errorHandler`.
+
+`src/errors.js` : classe mère `AppError(message, status)` et trois sous-classes (`ValidationError` 400, `NotFoundError` 404, `ConflictError` 409). `errorHandler` traduit aussi : JSON invalide (400), corps de plus de 1 Mo (413, `express.json({ limit: "1mb" })`), violation d'unicité PostgreSQL `23505` (409 « Cette ressource existe déjà. »), contraintes `23503`, `23514`, `22P02` (400 générique). Le message brut de PostgreSQL n'est jamais renvoyé : il citerait tables et contraintes. Toute autre erreur est écrite dans le journal du serveur et renvoyée en 500 neutre.
+
+Écart avec l'énoncé : `timestamp` et `inspected_at` utilisent `Joi.date().iso().raw()`. Joi vérifie la date sans la transformer en objet `Date`, ce qui garde le texte ISO d'origine et le contrat JSON du TP 3.
+
+Vérifié (mode mémoire, serveur lancé, puis arrêté) :
+- poids 500 et humidité 120 : 400 « weight_kg doit être inférieur ou égal à 150. humidity_pct doit être inférieur ou égal à 100. »
+- corps absent : 400 « timestamp est obligatoire. weight_kg est obligatoire. »
+- `?limit=abc` : 400 « limit doit être un nombre. »
+- inspection avec `author_id` : 400 « author_id n'est pas un champ autorisé. » ; date en 2099 : 400 « inspected_at ne peut pas être dans le futur. »
+- JSON cassé : 400 ; `grep "try {" src/controllers` : aucun résultat ; `npm test` : 18 tests verts.
+
+Non vérifié (Docker arrêté sur ce poste) : le rejeu d'une mesure qui doit donner 409 (contrainte d'unicité PostgreSQL) et l'absence de « duplicate key » dans la réponse. En mode mémoire un rejeu est accepté, il n'y a pas de contrainte d'unicité.
